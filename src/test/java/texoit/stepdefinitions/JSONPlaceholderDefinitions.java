@@ -1,5 +1,9 @@
 package texoit.stepdefinitions;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import texoit.apis.JSONPlaceholderAPI;
 import texoit.context.TestContext;
 import texoit.factory.PageFactoryManager;
@@ -21,6 +25,7 @@ public class JSONPlaceholderDefinitions {
     private final JSONPlaceholderPage storePage;
     private final JSONPlaceholderAPI cartApi;
     private final TestContext context;
+    public JsonArray arrayPhotos;
     public String consulta;
     public String name;
     public String id;
@@ -48,17 +53,27 @@ public class JSONPlaceholderDefinitions {
         storePage.selecionarAlbums1Photos();
     }
 
-    @And("eu salvo o json exibido")
+    @And("eu salvo o json exibido em array")
     public void salvarTextoJsonPhotos() throws ParseException {
-        JSONArray jsonArray = new JSONArray();
-        JSONParser parser = new JSONParser();
-        jsonArray = (JSONArray) parser.parse(storePage.salvarTextoJsonPhotos());
-        System.out.println(jsonArray);
+        arrayPhotos = new JsonParser().parse(storePage.salvarTextoJsonPhotos()).getAsJsonArray();
     }
 
     @Then("eu valido os dados do objeto id 6")
     public void eu_valido_os_dados_do_objeto_id() {
-//TODO: TERMINAR A VALIDAÇÃO!
+        for (int i = 0; i < arrayPhotos.size(); i++) {
+            JsonElement element = arrayPhotos.get(i);
+            JsonObject jsonObject = element.getAsJsonObject();
+            String id = jsonObject.get("id").toString();
+
+            if (id.equals("6")){
+                assertEquals("1", jsonObject.get("albumId").toString());
+                assertEquals("6", jsonObject.get("id").toString());
+                assertEquals("\"accusamus ea aliquid et amet sequi nemo\"", jsonObject.get("title").toString());
+                assertEquals("\"https://via.placeholder.com/600/56a8c2\"", jsonObject.get("url").toString());
+                assertEquals("\"https://via.placeholder.com/150/56a8c2\"", jsonObject.get("thumbnailUrl").toString());
+
+            }
+        }
     }
 
     @Given("que eu tenha o request de consulta para api comments pelo {string} {string}")
